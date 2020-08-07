@@ -5,13 +5,15 @@
 # Author: Chris LeBoa
 # Version: 2020-07-21
 
+#install.packages("httr")
 # Libraries
 library(tidyverse)
+library(httr)
 
 # Parameters
 
-data_input <- here::here("data/staff_secheduling/smc_scheduling_20200721.csv")
-schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_20200721.csv")
+data_input <- here::here("data/staff_secheduling/smc_scheduling_200801.csv")
+schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_20200801.csv")
 #===============================================================================
 
 #Code
@@ -37,4 +39,8 @@ formatted_schedule <-
 
 formatted_schedule %>%
   write_csv(schedule_output)
+
+
+#r <- GET("https://auth.calendly.com/oauth/authorize?
+#           client_id=RXoSbfhPq1sfIu0iPR3TzLzj62HKNqsO3IHHy6AtLp4")
 
