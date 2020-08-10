@@ -81,9 +81,34 @@ data %>%
 ```
 
 #Plot with the IGM and IGG as separate things 
-```{r}
+```{r, fig.asp=.7}
 data %>% 
-  pivot_longer()
+  filter(Control != "N") %>%
+  pivot_longer(
+    cols = contains("_") ,
+    names_to = c("test", "antibody"),
+    names_sep = "_",
+    values_to = "result"
+  ) %>%
+  # group_by(antibody) %>% 
+  ggplot(aes(as_factor(result), Level, fill = test)) +
+  geom_boxplot(outlier.shape = NA)  +
+  geom_point(
+    shape = 21, 
+    position = position_jitterdodge(
+      jitter.width = NULL, 
+      jitter.height = 0,
+      dodge.width = .75
+      )
+    ) +
+  facet_wrap(vars(antibody)) +
+  theme(legend.position = "bottom") + 
+  labs(
+    title = "Positive Validation Testing Results", 
+    x = "Rapid Test Result",
+    y = "IgG Reported Level"
+  )
+
 
 
 ```
