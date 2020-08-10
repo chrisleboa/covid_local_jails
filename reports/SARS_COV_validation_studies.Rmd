@@ -1,0 +1,90 @@
+---
+title: "Validation Study"
+author: "Chris LeBoa"
+date: "`r Sys.Date()`"
+output: 
+  github_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+# Libraries
+library(tidyverse)
+
+# Parameters
+data_import <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Validation Experiments/Covid Jails Validation 20200720.xlsx"
+
+#===============================================================================
+
+# Code
+data <- 
+  readxl::read_excel(data_import) %>% 
+  filter(!is.na(Premier_IGG))
+```
+
+## Samples Tested
+```{r}
+data %>% 
+  group_by(Control) %>% 
+  count()
+```
+
+
+# samples positivity (specificity)
+```{r}
+data %>% 
+  group_by(Control) %>% 
+  count(Premier_IGM, Premier_IGG, Autobio_IGM, Autobio_IGG)
+
+data %>% 
+  group_by(Control) %>% 
+  count(Premier_IGM, Premier_IGG)  #7 tested negative for both IGM and IGG
+
+data %>% 
+  group_by(Control) %>% 
+  count(Autobio_IGM, Autobio_IGG) #12 tested negative for both IGM and IGG
+
+```
+
+
+# Recode results as binomials
+```{r}
+
+data %>% 
+  filter(Control != "N") %>% 
+  mutate_if(is.integer, as.numeric) %>% 
+  mutate_at(vars(matches("_IG")), ~if_else(.== 2, 1, .)) %>% 
+  count(Premier_IGG)
+
+data %>% 
+  filter(Control != "N") %>% 
+  mutate_if(is.integer, as.numeric) %>% 
+  mutate_at(vars(matches("_IG")), ~if_else(.== 2, 1, .)) %>% 
+  count(Autobio_IGG)
+
+```
+
+#Graph the results 
+```{r}
+
+data %>%
+  filter(Control != "N") %>%
+  ggplot(aes(as_factor(Premier_IGG), Level)) +
+  geom_boxplot(outlier.shape = NA)  +
+  geom_jitter(aes(color = as_factor(Premier_IGM)), width = .1, height = 0)
+
+
+```
+
+#Plot with the IGM and IGG as separate things 
+```{r}
+data %>% 
+  pivot_longer()
+
+
+```
+
