@@ -12,23 +12,16 @@ library(httr)
 
 # Parameters
 
-data_input <- here::here("data/staff_secheduling/smc_scheduling_200920.csv")
-data_inputold <- here::here("data/staff_secheduling/smc_scheduling_200918.csv")
-schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_200920.csv")
+data_input <- here::here("data/staff_secheduling/smc_scheduling_201014.csv")
+schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201014.csv")
 #===============================================================================
 
 #Code
 
 
-upcoming_scheduled <- read_csv(data_input) #read upcoming data in
+upcoming_schedule <- read_csv(data_input) #read upcoming data in
 #This currently pulls all upcoming appointments
-upcoming_schedule2 <- read_csv(data_inputold)
 
-upcoming_schedule <-
-  bind_rows(upcoming_scheduled, upcoming_schedule2) %>%
-  arrange(desc(`Invitee Email`))
-
-glimpse(upcoming_schedule)
 
 formatted_schedule <-
   upcoming_schedule %>%
