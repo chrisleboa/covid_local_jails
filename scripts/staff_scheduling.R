@@ -13,19 +13,34 @@ library(httr)
 # Parameters
 
 #API Call
+#For real calls
+# current_data_raw <- postForm(
+#   uri='https://redcap.stanford.edu/api/',
+#   token='02528A04B2AEA71673CE1858FBA6D2BC',
+#   content='report',
+#   format='csv',
+#   report_id='77344',
+#   csvDelimiter='',
+#   rawOrLabel='raw',
+#   rawOrLabelHeaders='raw',
+#   exportCheckboxLabel='false',
+#   returnFormat='csv'
+# )
+
+#For testing
+#API Call
 current_data_raw <- postForm(
   uri='https://redcap.stanford.edu/api/',
-  token='02528A04B2AEA71673CE1858FBA6D2BC',
+  token='C0764C9272BF7328C7E8FA977F9F8AE0',
   content='report',
   format='csv',
-  report_id='77344',
+  report_id='78614',
   csvDelimiter='',
   rawOrLabel='raw',
   rawOrLabelHeaders='raw',
   exportCheckboxLabel='false',
   returnFormat='csv'
 )
-
 
 data_input <- here::here("data/staff_secheduling/smc_scheduling_201020.csv")
 schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201021.csv")
@@ -52,7 +67,7 @@ upcoming_schedule <-
   #read upcoming data in
 #This currently pulls all upcoming appointments
 
-view(upcoming_schedule)
+
 
 matches <-
   current_data %>%
@@ -76,7 +91,8 @@ followup_needed <-
     staff_last_name_2 = str_to_title(staff_last_name),
     staff_schedule_date_time_followup = `Start Date & Time`,
     #staff_email = staff_email,
-    first_time_stf = 0
+    first_time_stf = 0,
+    follow_up_staff_scheduling_complete = 2
   )
 
 
