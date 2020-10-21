@@ -12,25 +12,83 @@ library(httr)
 
 # Parameters
 
-data_input <- here::here("data/staff_secheduling/smc_scheduling_201014.csv")
-schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201014.csv")
+#API Call
+current_data_raw <- postForm(
+  uri='https://redcap.stanford.edu/api/',
+  token='02528A04B2AEA71673CE1858FBA6D2BC',
+  content='report',
+  format='csv',
+  report_id='77344',
+  csvDelimiter='',
+  rawOrLabel='raw',
+  rawOrLabelHeaders='raw',
+  exportCheckboxLabel='false',
+  returnFormat='csv'
+)
+
+
+data_input <- here::here("data/staff_secheduling/smc_scheduling_201020.csv")
+schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201021.csv")
+followup_output <- here::here("data/formatted_staff_scheduling/followup_needed/followup_smc_scheduling_test_2.csv")
+
 #===============================================================================
 
 #Code
 
+#Read in data
+current_data <-
+  read_csv(current_data_raw) %>%
+  filter(redcap_event_name == "baseline_arm_1") %>%
+  mutate_at(vars(staff_first_name, staff_last_name), str_to_lower)
 
-upcoming_schedule <- read_csv(data_input) #read upcoming data in
+
+upcoming_schedule <-
+  read_csv(data_input) %>%
+  mutate(
+    staff_first_name = `Invitee First Name`,
+    staff_last_name = `Invitee Last Name`
+  ) %>%
+  mutate_at(vars(staff_first_name, staff_last_name), str_to_lower)
+  #read upcoming data in
 #This currently pulls all upcoming appointments
+
+view(upcoming_schedule)
+
+matches <-
+  current_data %>%
+  inner_join(upcoming_schedule, by = c("staff_first_name", "staff_last_name"))
+
+non_matches <-
+  upcoming_schedule %>%
+  anti_join(current_data, by = c("staff_first_name", "staff_last_name"))
+  #pull(staff_first_name, staff_last_name)
+
+
+#matches
+#view(non_matches)
+
+followup_needed <-
+  matches %>%
+  transmute(
+    barcode_id = barcode_id,
+    redcap_event_name = "6month_arm_1",
+    staff_first_name_2 = str_to_title(staff_first_name),
+    staff_last_name_2 = str_to_title(staff_last_name),
+    staff_schedule_date_time_followup = `Start Date & Time`,
+    #staff_email = staff_email,
+    first_time_stf = 0
+  )
+
 
 
 formatted_schedule <-
-  upcoming_schedule %>%
+  non_matches %>%
   transmute(
-    barcode_id = "test_666",
+    barcode_id = "56169-SMC-S", #This part needs improvement
     redcap_event_name = "baseline_arm_1",
+    staff_first_name = str_to_title(staff_first_name),
+    staff_last_name = str_to_title(staff_last_name),
     redcap_survey_identifier = "",
-    staff_first_name = `Invitee First Name`,
-    staff_last_name = `Invitee Last Name`,
     staff_schedule_date_time = `Start Date & Time`,
     staff_email = `Invitee Email`,
     staff_scheduling_complete = 2
@@ -39,6 +97,8 @@ formatted_schedule <-
 formatted_schedule %>%
   write_csv(schedule_output)
 
+followup_needed %>%
+  write_csv(followup_output)
 
 #r <- GET("https://auth.calendly.com/oauth/authorize?
 #           client_id=RXoSbfhPq1sfIu0iPR3TzLzj62HKNqsO3IHHy6AtLp4")
