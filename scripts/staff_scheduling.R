@@ -14,27 +14,12 @@ library(httr)
 
 #API Call
 #For real calls
-# current_data_raw <- postForm(
-#   uri='https://redcap.stanford.edu/api/',
-#   token='02528A04B2AEA71673CE1858FBA6D2BC',
-#   content='report',
-#   format='csv',
-#   report_id='77344',
-#   csvDelimiter='',
-#   rawOrLabel='raw',
-#   rawOrLabelHeaders='raw',
-#   exportCheckboxLabel='false',
-#   returnFormat='csv'
-# )
-
-#For testing
-#API Call
 current_data_raw <- postForm(
   uri='https://redcap.stanford.edu/api/',
-  token='C0764C9272BF7328C7E8FA977F9F8AE0',
+  token='02528A04B2AEA71673CE1858FBA6D2BC',
   content='report',
   format='csv',
-  report_id='78614',
+  report_id='77344',
   csvDelimiter='',
   rawOrLabel='raw',
   rawOrLabelHeaders='raw',
@@ -42,8 +27,23 @@ current_data_raw <- postForm(
   returnFormat='csv'
 )
 
-data_input <- here::here("data/staff_secheduling/smc_scheduling_201020.csv")
-schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201021.csv")
+#For testing
+#API Call
+# current_data_raw <- postForm(
+#   uri='https://redcap.stanford.edu/api/',
+#   token='C0764C9272BF7328C7E8FA977F9F8AE0',
+#   content='report',
+#   format='csv',
+#   report_id='78614',
+#   csvDelimiter='',
+#   rawOrLabel='raw',
+#   rawOrLabelHeaders='raw',
+#   exportCheckboxLabel='false',
+#   returnFormat='csv'
+# )
+
+data_input <- here::here("data/staff_secheduling/smc_scheduling_201027.csv")
+schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201027.csv")
 followup_output <- here::here("data/formatted_staff_scheduling/followup_needed/followup_smc_scheduling_test_2.csv")
 
 #===============================================================================
