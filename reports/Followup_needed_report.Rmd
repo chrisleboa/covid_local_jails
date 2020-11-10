@@ -1,0 +1,203 @@
+---
+title: "Covid in Jails- Followup Needed" 
+author: "Week of 11-10-2020"
+date: "`r Sys.Date()`"
+output: 
+  word_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# Libraries
+library(tidyverse)
+library(RCurl)
+library(lubridate)
+library(kableExtra)
+library(knitr)
+
+# API Pull
+enrollment_data_raw <- postForm(
+  uri='https://redcap.stanford.edu/api/',
+  token='02528A04B2AEA71673CE1858FBA6D2BC',
+  content='report',
+  format='csv',
+  report_id='73260',
+  csvDelimiter='',
+  rawOrLabel='raw',
+  rawOrLabelHeaders='raw',
+  exportCheckboxLabel='false',
+  returnFormat='csv'
+)
+
+qc_data_raw <- postForm(
+  uri='https://redcap.stanford.edu/api/',
+  token='02528A04B2AEA71673CE1858FBA6D2BC',
+  content='report',
+  format='csv',
+  report_id='78082',
+  csvDelimiter='',
+  rawOrLabel='raw',
+  rawOrLabelHeaders='raw',
+  exportCheckboxLabel='false',
+  returnFormat='csv'
+)
+
+# Read in data 
+enrollment_data <-  
+  read_csv(enrollment_data_raw) 
+
+qc_data <- 
+  read_csv(qc_data_raw) %>% 
+  filter(!is.na(quality_control_comments_complete))
+
+
+data <- 
+  enrollment_data %>% 
+  left_join(qc_data, by = c("barcode_id", "redcap_event_name")) %>% 
+  filter(redcap_event_name != "quality_control_arm_1")
+
+data %>% 
+  count(redcap_event_name)
+
+#glimpse(enrollment_data)
+
+#===============================================================================
+
+# Code
+```
+
+```{r, echo=FALSE, warning=FALSE}
+enrollment_data_cleaned <- 
+  data %>% 
+  mutate(
+    population = case_when(
+      consent_stf_or_incarc == 1 ~ "staff",
+      consent_stf_or_incarc == 2 ~ "incarcerated",
+      TRUE ~ as.character(consent_stf_or_incarc)
+    ),
+    pop2 = case_when(
+      str_detect(barcode_id, "-S-") == TRUE ~ "staff",
+      str_detect(barcode_id, "-I-") == TRUE ~ "incarcerated",
+      TRUE ~ "test"
+    ),
+    followup_count = 
+      ifelse(str_detect(redcap_event_name, "3") == TRUE, 1, 0), 
+    baseline_count = 
+      ifelse(str_detect(redcap_event_name, "baseline") == TRUE & consent_yn == 1, 1, 0),
+    consent = consent_yn,
+    consent_timestamp = as_datetime(consent_timestamp),
+    enrollment_week = floor_date(results_date, "week"), 
+    followup_1_week = floor_date(results_date, "week"),
+    this_week = if_else(results_date >= today() - days(8), 1, 0), 
+    followup_week = 
+      ifelse(str_detect(redcap_event_name, "3") == TRUE & this_week == 1, 1, 0), 
+    baseline_week = 
+      ifelse(
+        str_detect(redcap_event_name, "baseline") == TRUE &
+          consent_yn == 1 &
+          this_week == 1,
+        1,
+        0
+      ),
+  ) 
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# ### Total Enrolled
+# enrollment_data_cleaned %>% 
+#   filter(consent_yn == 1) %>% 
+#   count(population) %>% 
+#   knitr::kable("markdown")
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# ### Enrolled this week
+# enrollment_data_cleaned %>% 
+#   filter(consent_yn == 1, enrollment_week >= today() - days(7)) %>% 
+#   count(population) %>% 
+#   knitr::kable("markdown")
+```
+
+## Project Enrollments
+
+```{r, echo=FALSE, warning=FALSE}
+enrollment_data_cleaned %>%
+  #filter(consent_yn == 1) %>%
+  group_by(pop2) %>%
+  summarise(
+    `Weekly Enrollments` = sum(baseline_week, na.rm = TRUE), 
+    `Follow ups` = sum(followup_week, na.rm = TRUE),
+    `Total Enrolled` = sum(baseline_count, na.rm = TRUE)
+  ) %>% 
+  rename(Population = pop2) %>% 
+  knitr::kable("markdown")
+
+
+
+
+```
+
+```{r}
+followups_complete <- 
+  enrollment_data_cleaned %>% 
+  filter(
+    str_detect(redcap_event_name, "3") == TRUE,
+    !is.na(results_date)
+  ) %>% 
+  pull(barcode_id)
+
+followups_attempted <- 
+  enrollment_data_cleaned %>% 
+  filter(
+    str_detect(redcap_event_name, "3") == TRUE
+  ) %>% 
+  pull(barcode_id)
+
+followup_needed <- 
+  enrollment_data_cleaned %>% 
+  filter(str_detect(redcap_event_name, "baseline") == TRUE) %>% 
+  mutate(
+    days_since_enrollment = today() - results_date,
+    follow_up_eligible = 
+      if_else(
+        days_since_enrollment > 60 & days_since_enrollment < 120, 1, 0), 
+    follow_up_time_exceeded = if_else(days_since_enrollment > 120, 1, 0), 
+  ) %>% 
+  filter(!barcode_id %in% followups_complete) 
+  # %>% count(follow_up_eligible)
+```
+
+```{r}
+followup_needed %>%  
+  filter(pop2 == "incarcerated" & follow_up_eligible == 1) %>% 
+  select(
+    barcode_id, 
+    consent_inmate_number,
+    consent_first_name,
+    consent_last_name,
+    days_since_enrollment) %>% 
+  write_csv("/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_incarcerated_201110.csv")
+  
+```
+
+
+```{r}
+followup_needed %>%  
+  filter(pop2 == "staff" & follow_up_eligible == 1) %>% 
+  select(
+    barcode_id, 
+    staff_email,
+    consent_first_name,
+    consent_last_name,
+    days_since_enrollment) %>% 
+  write_csv("/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_staff_201110.csv")
+  
+```
+
+
