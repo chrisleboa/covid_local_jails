@@ -47,7 +47,25 @@ qc_data_raw <- postForm(
   returnFormat='csv'
 )
 
+# Read in Files 
+
+housing_maguire_file_in <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/San Mateo/housing_data/MCF roster 11-30.xls"
+housing_maple_file_in <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/San Mateo/housing_data/MSCC roster 11-30.xls"
+
+followup_needed_incarc_output <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_incarcerated_201201.csv"
+followup_needed_staff_output <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_staff_201201.csv"
+
+
 # Read in data 
+
+housing_maguire <- 
+  readxl::read_xls(housing_maguire_file_in, skip = 1) %>%  
+  filter(str_detect(Number, "[^0-9]") == FALSE)
+
+housing_maple <- 
+  readxl::read_xls(housing_maple_file_in, skip = 1) %>%  
+  filter(str_detect(Number, "[^0-9]") == FALSE)
+
 enrollment_data <-  
   read_csv(enrollment_data_raw) 
 
@@ -55,6 +73,14 @@ qc_data <-
   read_csv(qc_data_raw) %>% 
   filter(!is.na(quality_control_comments_complete))
 
+
+
+
+#Combine Data
+
+housing <-  
+  housing_maguire %>% 
+  bind_rows(housing_maple)
 
 data <- 
   enrollment_data %>% 
@@ -93,7 +119,7 @@ enrollment_data_cleaned <-
     consent_timestamp = as_datetime(consent_timestamp),
     enrollment_week = floor_date(results_date, "week"), 
     followup_1_week = floor_date(results_date, "week"),
-    this_week = if_else(results_date >= today() - days(8), 1, 0), 
+    this_week = if_else(results_date >= today() - days(7), 1, 0), 
     followup_week = 
       ifelse(str_detect(redcap_event_name, "3") == TRUE & this_week == 1, 1, 0), 
     baseline_week = 
@@ -166,15 +192,16 @@ followup_needed <-
     days_since_enrollment = today() - results_date,
     follow_up_eligible = 
       if_else(
-        days_since_enrollment > 60 & days_since_enrollment < 120, 1, 0), 
-    follow_up_time_exceeded = if_else(days_since_enrollment > 120, 1, 0), 
+        days_since_enrollment > 60 & days_since_enrollment < 140, 1, 0), 
+    follow_up_time_exceeded = if_else(days_since_enrollment > 140, 1, 0), 
   ) %>% 
   filter(!barcode_id %in% followups_complete) 
   # %>% count(follow_up_eligible)
 ```
 
 ```{r}
-followup_needed %>%  
+followup_needed_incarc <- 
+  followup_needed %>%  
   filter(pop2 == "incarcerated" & follow_up_eligible == 1) %>% 
   select(
     barcode_id, 
@@ -182,13 +209,19 @@ followup_needed %>%
     consent_first_name,
     consent_last_name,
     days_since_enrollment) %>% 
-  write_csv("/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_incarcerated_201110.csv")
+  left_join(housing, keep = FALSE, by = c("consent_inmate_number" = "Number")) %>% 
+  arrange(desc(Housing))
+
+followup_needed_incarc %>% 
+  write_csv(followup_needed_incarc_output)
+  
   
 ```
 
 
 ```{r}
-followup_needed %>%  
+followup_needed_staff <- 
+  followup_needed %>%  
   filter(pop2 == "staff" & follow_up_eligible == 1) %>% 
   select(
     barcode_id, 
@@ -196,8 +229,11 @@ followup_needed %>%
     consent_first_name,
     consent_last_name,
     days_since_enrollment) %>% 
-  write_csv("/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_staff_201110.csv")
+  write_csv(followup_needed_staff_output)
   
+
+
 ```
+
 
 
