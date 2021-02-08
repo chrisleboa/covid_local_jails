@@ -49,21 +49,21 @@ qc_data_raw <- postForm(
 
 # Read in Files 
 
-housing_maguire_file_in <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/San Mateo/housing_data/MCF roster 11-30.xls"
-housing_maple_file_in <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/San Mateo/housing_data/MSCC roster 11-30.xls"
+housing_maguire_file_in <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/San Mateo/housing_data/MCF roster 12-21.xlsx"
+housing_maple_file_in <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/San Mateo/housing_data/MSCC roster 12-21.xls.xlsx"
 
-followup_needed_incarc_output <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_incarcerated_201201.csv"
-followup_needed_staff_output <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_staff_201201.csv"
+followup_needed_incarc_output <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_incarcerated_201221.csv"
+followup_needed_staff_output <- "/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Followup_needed/san_mateo_staff_201221.csv"
 
 
 # Read in data 
 
 housing_maguire <- 
-  readxl::read_xls(housing_maguire_file_in, skip = 1) %>%  
+  readxl::read_xlsx(housing_maguire_file_in, skip = 0) %>%  
   filter(str_detect(Number, "[^0-9]") == FALSE)
 
 housing_maple <- 
-  readxl::read_xls(housing_maple_file_in, skip = 1) %>%  
+  readxl::read_xlsx(housing_maple_file_in, skip = 0) %>%  
   filter(str_detect(Number, "[^0-9]") == FALSE)
 
 enrollment_data <-  

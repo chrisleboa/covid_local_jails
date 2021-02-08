@@ -5,11 +5,15 @@
 # Author: Chris LeBoa
 # Version: 2020-07-21
 
+# Steps to using this script
+  # sign in to calendly password 56169COVID
+
+
 #install.packages("httr")
 # Libraries
 library(tidyverse)
 library(httr)
-
+library(RCurl)
 # Parameters
 
 #API Call
@@ -42,9 +46,9 @@ current_data_raw <- postForm(
 #   returnFormat='csv'
 # )
 
-data_input <- here::here("data/staff_secheduling/smc_scheduling_201027.csv")
-schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_201027.csv")
-followup_output <- here::here("data/formatted_staff_scheduling/followup_needed/followup_smc_scheduling_test_2.csv")
+data_input <- here::here("data/staff_secheduling/smc_scheduling_210202.csv")
+schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_210202.csv")
+followup_1_output <- here::here("data/formatted_staff_scheduling/followup_needed/followup_smc_scheduling_210202.csv")
 
 #===============================================================================
 
@@ -53,9 +57,12 @@ followup_output <- here::here("data/formatted_staff_scheduling/followup_needed/f
 #Read in data
 current_data <-
   read_csv(current_data_raw) %>%
-  filter(redcap_event_name == "baseline_arm_1") %>%
+  filter(str_detect(redcap_event_name, "arm_1")) %>%
   mutate_at(vars(staff_first_name, staff_last_name), str_to_lower)
 
+current_data %>%
+#   pivot_wider(names_from = redcap_event_name, values_from = results_complete) %>%
+   view()
 
 upcoming_schedule <-
   read_csv(data_input) %>%
@@ -79,17 +86,32 @@ non_matches <-
   #pull(staff_first_name, staff_last_name)
 
 
-#matches
+matches
 #view(non_matches)
 
-followup_needed <-
+followup_1_needed <-
   matches %>%
+  #filter(follow_up_staff_scheduling_complete == 0) %>%
   transmute(
     barcode_id = barcode_id,
-    redcap_event_name = "6month_arm_1",
+    redcap_event_name = "3month_arm_1",
     staff_first_name_2 = str_to_title(staff_first_name),
     staff_last_name_2 = str_to_title(staff_last_name),
     staff_schedule_date_time_followup = `Start Date & Time`,
+    #staff_email = staff_email,
+    first_time_stf = 0,
+    follow_up_staff_scheduling_complete = 2
+  )
+
+followup_2_needed <-
+  matches %>%
+  #filter(follow_up_staff_scheduling_complete == 2) %>%
+  transmute(
+    barcode_id = barcode_id,
+    redcap_event_name = "6month_arm_1",
+    staff_first_name_3 = str_to_title(staff_first_name),
+    staff_last_name_3 = str_to_title(staff_last_name),
+    staff_schedule_date_time_followup_2 = `Start Date & Time`,
     #staff_email = staff_email,
     first_time_stf = 0,
     follow_up_staff_scheduling_complete = 2
@@ -113,8 +135,8 @@ formatted_schedule <-
 formatted_schedule %>%
   write_csv(schedule_output)
 
-followup_needed %>%
-  write_csv(followup_output)
+followup_1_needed %>%
+  write_csv(followup_1_output)
 
 #r <- GET("https://auth.calendly.com/oauth/authorize?
 #           client_id=RXoSbfhPq1sfIu0iPR3TzLzj62HKNqsO3IHHy6AtLp4")

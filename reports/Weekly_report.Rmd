@@ -93,7 +93,7 @@ enrollment_data_cleaned <-
     consent_timestamp = as_datetime(consent_timestamp),
     enrollment_week = floor_date(results_date, "week"), 
     followup_1_week = floor_date(results_date, "week"),
-    this_week = if_else(results_date >= today() - days(8), 1, 0), 
+    this_week = if_else(results_date >= today() - days(6), 1, 0), 
    followup_week = 
      ifelse(str_detect(redcap_event_name, "3") == TRUE & this_week == 1, 1, 0), 
    baseline_week = 
@@ -145,7 +145,7 @@ summarise(
 ```{r, echo=FALSE}
 
 enrollment_data_cleaned %>% 
-  filter(consent_yn == 1, year(consent_date) == "2020", this_week == 1) %>% 
+  filter(consent_yn == 1,this_week == 1) %>% 
   ggplot(aes(fill = population, x = results_date)) +
   geom_bar(position = "stack") + 
   scale_x_date(date_breaks = "day", date_labels = "%A") +
@@ -158,10 +158,10 @@ enrollment_data_cleaned %>%
   )
 
 enrollment_data_cleaned %>% 
-  filter(consent_yn == 1, year(consent_date) == "2020") %>% 
+  filter(consent_yn == 1) %>% 
   ggplot(aes(fill = population, x = enrollment_week)) +
   geom_bar(position = "stack") + 
-  scale_x_date(date_breaks = "2 weeks", date_labels = "%b %e") +
+  scale_x_date(date_breaks = "month", date_labels = "%b") +
   theme(legend.position = "top") +
   labs(
     title = "Enrollments into COVID in Local Jails Project over time",
