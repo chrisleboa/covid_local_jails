@@ -46,9 +46,9 @@ current_data_raw <- postForm(
 #   returnFormat='csv'
 # )
 
-data_input <- here::here("data/staff_secheduling/smc_scheduling_210202.csv")
-schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_210202.csv")
-followup_1_output <- here::here("data/formatted_staff_scheduling/followup_needed/followup_smc_scheduling_210202.csv")
+data_input <- here::here("data/staff_secheduling/smc_scheduling_210416.csv")
+schedule_output <- here::here("data/formatted_staff_scheduling/formatted_smc_scheduling_210416.csv")
+followup_1_output <- here::here("data/formatted_staff_scheduling/followup_needed/followup_smc_scheduling_210416.csv")
 
 #===============================================================================
 

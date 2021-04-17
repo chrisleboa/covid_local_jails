@@ -11,7 +11,7 @@ library(lubridate)
 library(kableExtra)
 library(knitr)
 
-data_output <-"/Users/ChrisLeBoa/Dropbox/Covid Screening in Jails  Project/Redcap/Quality Control/qc_data_for_upload.csv"
+data_output <-"/Users/ChrisLeBoa/GitHub/covid_local_jails/data/qc_data_to_upload.csv"
 
 # API Pull
 enrollment_data_raw <- postForm(
@@ -92,5 +92,32 @@ qc_changes <-
 
 qc_changes %>%
   write_csv(data_output)
+
+
+## To Do
+
+### Overall result and antibody results
+### The number of contacts > 20
+### The jails people said that they were in
+      #Make sure if intake say were in community
+### Self Reported vs actual test results
+
+
+# To Be pulled from EPIC
+### Date of birth < 18 years
+### COVID
+
+## Make a one pager of the two analysis plans
+## There is somethng there with the vaccine pieces but we did not have a big enough N
+## Race age jail were significant but not enough to be included
+# Can lump attitutes and effects in the jails
+#Masks, Court dates, protect oneself,
+## Could frame these policy pieces into the incidence / prevalence paper
+
+### It makes sense to have paper on vaccine acceptance and medical trust
+### Risk factord for COVID infection in jail
+#  Vaccine medical trust and incidence / prevalenve
+#  (need to remove those that are vaccinated)
+
 
 

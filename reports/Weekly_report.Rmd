@@ -1,6 +1,5 @@
 ---
-title: "Covid in Jails- Redcap Data Cleaning" 
-author: "Week of 10-19-2020"
+title: "Covid in Jails- Weekly Report" 
 date: "`r Sys.Date()`"
 output: 
   word_document:
@@ -128,7 +127,7 @@ enrollment_data_cleaned <-
 
 ```{r, echo=FALSE, warning=FALSE}
 enrollment_data_cleaned %>%
-#filter(consent_yn == 1) %>%
+filter(pop2 != "test") %>%
 group_by(pop2) %>%
 summarise(
   `Weekly Enrollments` = sum(baseline_week, na.rm = TRUE), 
@@ -146,13 +145,16 @@ summarise(
 
 enrollment_data_cleaned %>% 
   filter(consent_yn == 1,this_week == 1) %>% 
-  ggplot(aes(fill = population, x = results_date)) +
-  geom_bar(position = "stack") + 
+  select(population, results_date) %>% 
+  #filter(population == "incarcerated") %>% 
+  #select(barcode_id,results_date)
+  ggplot() +
+  geom_bar(aes(x = results_date)) + 
   scale_x_date(date_breaks = "day", date_labels = "%A") +
   theme(legend.position = "top") +
   labs(
     title = "Enrollments This Week",
-    y = "Number of Participants Enrolled by Week", 
+    y = "Number of Participants Enrolled", 
     x = "Day of week"
     #source = str_glue("Updated", {today())
   )
@@ -174,12 +176,14 @@ enrollment_data_cleaned %>%
 ```
 
 ## Accomplishments for the week 
-- second full week of testing 
-- With wifi - > no probblems with Redcap
+- Continued interest from incarcerated populations 
+- Spent time in San Mateo Facilities this week 
 
 ## Challenges 
 
-- Running low on premier tests and purple lid tubes 
+- Limited days of testing 
+- At&T payment needed 
+- Lockdown on Wednesday prevented testing 
        
 
 

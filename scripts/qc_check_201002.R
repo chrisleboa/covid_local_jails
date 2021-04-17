@@ -56,7 +56,10 @@ data <-
 
 qc_checked_data <-
   data %>%
-  filter(consent_yn == 1) %>%
+  filter(
+    consent_yn == 1,
+    is.na(qc_resolution_notes)
+    ) %>%
   mutate(
     qc_status = case_when(
       is.na(consent_name_sig) ~ 2,
@@ -70,7 +73,7 @@ qc_checked_data <-
       is.na(consent_name_sig) ~ "Missing consent signature",
       is.na(consent_confirm_sign) ~ "Missing consent confirmation signature",
       is.na(results_pic) ~ "Missing results photo",
-      is.na(consent_yn) ~ "missing consent"
+      is.na(consent_yn) ~ "missing consent",
       year(consent_date) < 2020 ~ "Consent date is wrong",
       TRUE ~ qc_notes
     )
